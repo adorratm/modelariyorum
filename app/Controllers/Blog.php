@@ -50,13 +50,13 @@ class Blog extends ResourceController
          */
         if ($file->hasMoved()) :
             helper("Tools");
-            Webp2(WRITEPATH . "uploads/" . $file->getName());
+           $webpImage =  Webp2(WRITEPATH . "uploads/" . $file->getName());
         endif;
 
         $data = [
             'post_title' => $this->request->getVar('title'),
             'post_description' => $this->request->getVar('description'),
-            'post_featured_image' => $newName . ".webp"
+            'post_featured_image' => ($webpImage == NULL ? NULL : $newName . ".webp")
         ];
         $post_id = $this->model->insert($data);
         $data['post_id'] = $post_id;
