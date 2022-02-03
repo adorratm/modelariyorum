@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use CodeIgniter\Images\Exceptions\ImageException as ExceptionsImageException;
 use CodeIgniter\RESTful\ResourceController;
 
 class Blog extends ResourceController
@@ -26,16 +27,36 @@ class Blog extends ResourceController
         helper(['form']);
         $rules = [
             'title' => 'required|min_length[2]',
-            'description' => 'required'
+            'description' => 'required',
+            'featured_image' => 'uploaded[featured_image]|max_size[featured_image,5120]|is_image[featured_image]'
         ];
 
         if (!$this->validate($rules)) :
             return $this->failValidationErrors($this->validator->getErrors());
         endif;
 
+        /**
+         * Get File
+         */
+        $file = $this->request->getFile('featured_image');
+        if (!$file->isValid()) :
+            return $this->failValidationErrors($file->getErrorString());
+        endif;
+        $newName = $file->getRandomName();
+        $file->move(WRITEPATH . "uploads", $newName);
+        $newName = explode(".", $newName)[0];
+        /**
+         * Image Manipulation
+         */
+        if ($file->hasMoved()) :
+            helper("Tools");
+            Webp2(WRITEPATH . "uploads/" . $file->getName());
+        endif;
+
         $data = [
             'post_title' => $this->request->getVar('title'),
-            'post_description' => $this->request->getVar('description')
+            'post_description' => $this->request->getVar('description'),
+            'post_featured_image' => $newName . ".webp"
         ];
         $post_id = $this->model->insert($data);
         $data['post_id'] = $post_id;
@@ -82,7 +103,7 @@ class Blog extends ResourceController
     public function delete($id = null)
     {
         $data = $this->model->find($id);
-        if(!empty($data)):
+        if (!empty($data)) :
             $this->model->delete($id);
             return $this->respondDeleted($data);
         endif;
