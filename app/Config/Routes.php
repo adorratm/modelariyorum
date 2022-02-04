@@ -16,7 +16,7 @@ if (file_exists(SYSTEMPATH . 'Config/Routes.php')) {
  * Router Setup
  * --------------------------------------------------------------------
  */
-$routes->setDefaultNamespace('App\Controllers');
+$routes->setDefaultNamespace('App\Controllers\Frontend');
 $routes->setDefaultController('Home');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
@@ -31,9 +31,17 @@ $routes->setAutoRoute(true);
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-//$routes->get('/', 'Home::index');
+$routes->get('/', 'Home::index');
+$routes->group('panel', ['namespace' => 'App\Controllers\Backend'], static function ($routes) {
+    $routes->post('login', 'User::login', ['as' => 'login']);
+    
+});
+$routes->group('panel', ['namespace' => 'App\Controllers\Backend', 'filter' => 'oauthfilter'], static function ($routes) {
+    $routes->resource('dashboard');
+    $routes->resource('blog');
+    $routes->post('register', 'User::register', ['as' => 'register']);
+});
 
-$routes->resource('blog');
 
 /*
  * --------------------------------------------------------------------
@@ -49,5 +57,5 @@ $routes->resource('blog');
  * needing to reload it.
  */
 if (file_exists(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
-    require APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php';
+    require_once APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php';
 }

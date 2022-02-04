@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Backend;
 
 use CodeIgniter\Images\Exceptions\ImageException as ExceptionsImageException;
 use CodeIgniter\RESTful\ResourceController;

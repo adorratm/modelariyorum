@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Backend;
 
 use \App\Libraries\Oauth;
 use \OAuth2\Request;
 use CodeIgniter\API\ResponseTrait;
 use App\Models\UserModel;
+use App\Controllers\BaseController;
 
 class User extends BaseController
 {
