@@ -15,7 +15,13 @@ class Blog extends ResourceController
      */
     public function index()
     {
+        /**
+         * Find All Blog Posts
+         */
         $posts = $this->model->findAll();
+        /**
+         * Return Response
+         */
         return $this->respond($posts);
     }
 
@@ -24,17 +30,24 @@ class Blog extends ResourceController
      */
     public function create()
     {
+        /**
+         * Load Helpers
+         */
         helper(['form', 'tools']);
+        /**
+         * Validation Rules
+         */
         $rules = [
             'title' => 'required|min_length[2]',
             'description' => 'required',
             'featured_image' => 'uploaded[featured_image]|max_size[featured_image,5120]|is_image[featured_image]'
         ];
-
+        /**
+         * Validation
+         */
         if (!$this->validate($rules)) :
             return $this->failValidationErrors($this->validator->getErrors());
         endif;
-
         /**
          * Get File
          */
@@ -46,13 +59,14 @@ class Blog extends ResourceController
         $file->move("./public/uploads", $newName);
         $newName = pathinfo("./public/uploads/" . $file->getName());
         /**
-         * Image Manipulation
+         * Image Manipulation Webp
          */
         if ($file->hasMoved()) :
             $webpImage =  Webp2("./public/uploads/" . $file->getName());
-
         endif;
-
+        /**
+         * Prepare Data
+         */
         $data = [
             'post_title' => $this->request->getVar('title'),
             'post_description' => $this->request->getVar('description'),
@@ -60,6 +74,9 @@ class Blog extends ResourceController
         ];
         $post_id = $this->model->insert($data);
         $data['post_id'] = $post_id;
+        /**
+         * Return Response
+         */
         return $this->respondCreated($data);
     }
 
@@ -68,7 +85,13 @@ class Blog extends ResourceController
      */
     public function show($id = null)
     {
+        /**
+         * Find Data
+         */
         $data = $this->model->find($id);
+        /**
+         * Return Response
+         */
         return $this->respond($data);
     }
 
@@ -77,7 +100,13 @@ class Blog extends ResourceController
      */
     public function update($id = null)
     {
+        /**
+         * Load Helpers
+         */
         helper(['form', 'array', 'tools']);
+        /**
+         * Validation Rules
+         */
         $rules = [
             'title' => 'required|min_length[2]',
             'description' => 'required',
@@ -87,7 +116,9 @@ class Blog extends ResourceController
             $img = ['featured_image' => 'uploaded[featured_image]|max_size[featured_image,5120]|is_image[featured_image]'];
             $rules = array_merge($rules, $img);
         endif;
-
+        /**
+         * Validation
+         */
         if (!$this->validate($rules)) :
             return $this->failValidationErrors($this->validator->getErrors());
         endif;
@@ -95,13 +126,14 @@ class Blog extends ResourceController
          * Get Old Data
          */
         $oldData = $this->model->find($id);
-
+        /**
+         * Prepare Data
+         */
         $data = [
             'post_id' => $id,
             'post_title' => $this->request->getVar("title"),
             'post_description' => $this->request->getVar("description"),
         ];
-
         /**
          * Get File
          */
@@ -127,8 +159,10 @@ class Blog extends ResourceController
                 $data["post_featured_image"] = ($webpImage == NULL ? NULL : $newName["filename"] . ".webp");
             endif;
         endif;
-
         $this->model->save($data);
+        /**
+         * Return Response
+         */
         return $this->respond($data);
     }
 
@@ -137,6 +171,9 @@ class Blog extends ResourceController
      */
     public function delete($id = null)
     {
+        /**
+         * Find Old Data
+         */
         $data = $this->model->find($id);
         if (!empty($data)) :
             $this->model->delete($id);
@@ -146,6 +183,9 @@ class Blog extends ResourceController
             if (file_exists("./public/uploads/" . $data["post_featured_image"])) :
                 @unlink("./public/uploads/" . $data["post_featured_image"]);
             endif;
+            /**
+             * Return Response
+             */
             return $this->respondDeleted($data);
         endif;
         return $this->failNotFound('Item Not Found.');
