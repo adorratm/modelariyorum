@@ -24,7 +24,7 @@ class Blog extends ResourceController
      */
     public function create()
     {
-        helper(['form']);
+        helper(['form', 'tools']);
         $rules = [
             'title' => 'required|min_length[2]',
             'description' => 'required',
@@ -43,20 +43,20 @@ class Blog extends ResourceController
             return $this->failValidationErrors($file->getErrorString());
         endif;
         $newName = $file->getRandomName();
-        $file->move(WRITEPATH . "uploads", $newName);
-        $newName = explode(".", $newName)[0];
+        $file->move("./public/uploads", $newName);
+        $newName = pathinfo("./public/uploads/" . $file->getName());
         /**
          * Image Manipulation
          */
         if ($file->hasMoved()) :
-            helper("Tools");
-           $webpImage =  Webp2(WRITEPATH . "uploads/" . $file->getName());
+            $webpImage =  Webp2("./public/uploads/" . $file->getName());
+
         endif;
 
         $data = [
             'post_title' => $this->request->getVar('title'),
             'post_description' => $this->request->getVar('description'),
-            'post_featured_image' => ($webpImage == NULL ? NULL : $newName . ".webp")
+            'post_featured_image' => ($webpImage == NULL ? NULL : $newName["filename"] . ".webp")
         ];
         $post_id = $this->model->insert($data);
         $data['post_id'] = $post_id;
@@ -77,21 +77,56 @@ class Blog extends ResourceController
      */
     public function update($id = null)
     {
-        helper(['form']);
+        helper(['form', 'array', 'tools']);
         $rules = [
             'title' => 'required|min_length[2]',
-            'description' => 'required'
+            'description' => 'required',
         ];
+        $fileName = dot_array_search('featured_image.name', $_FILES);
+        if (!empty($fileName)) :
+            $img = ['featured_image' => 'uploaded[featured_image]|max_size[featured_image,5120]|is_image[featured_image]'];
+            $rules = array_merge($rules, $img);
+        endif;
+
         if (!$this->validate($rules)) :
             return $this->failValidationErrors($this->validator->getErrors());
         endif;
+        /**
+         * Get Old Data
+         */
+        $oldData = $this->model->find($id);
 
-        $input = $this->request->getRawInput();
         $data = [
             'post_id' => $id,
-            'post_title' => $input["title"],
-            'post_description' => $input["description"],
+            'post_title' => $this->request->getVar("title"),
+            'post_description' => $this->request->getVar("description"),
         ];
+
+        /**
+         * Get File
+         */
+        if (!empty($fileName)) :
+            $file = $this->request->getFile('featured_image');
+            if (!$file->isValid()) :
+                return $this->failValidationErrors($file->getErrorString());
+            endif;
+            $newName = $file->getRandomName();
+            $file->move("./public/uploads", $newName);
+            $newName = pathinfo("./public/uploads/" . $file->getName());
+            /**
+             * Image Manipulation
+             */
+            if ($file->hasMoved()) :
+                $webpImage =  Webp2("./public/uploads/" . $file->getName());
+                /**
+                 * Unlink Old Source
+                 */
+                if (file_exists("./public/uploads/" . $oldData["post_featured_image"])) :
+                    @unlink("./public/uploads/" . $oldData["post_featured_image"]);
+                endif;
+                $data["post_featured_image"] = ($webpImage == NULL ? NULL : $newName["filename"] . ".webp");
+            endif;
+        endif;
 
         $this->model->save($data);
         return $this->respond($data);
@@ -105,6 +140,12 @@ class Blog extends ResourceController
         $data = $this->model->find($id);
         if (!empty($data)) :
             $this->model->delete($id);
+            /**
+             * Unlink Old Source
+             */
+            if (file_exists("./public/uploads/" . $data["post_featured_image"])) :
+                @unlink("./public/uploads/" . $data["post_featured_image"]);
+            endif;
             return $this->respondDeleted($data);
         endif;
         return $this->failNotFound('Item Not Found.');
