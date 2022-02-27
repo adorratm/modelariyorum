@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 04, 2022 at 02:08 PM
+-- Generation Time: Feb 27, 2022 at 07:18 PM
 -- Server version: 10.4.22-MariaDB
 -- PHP Version: 8.1.2
 
@@ -70,6 +70,7 @@ INSERT INTO `oauth_access_tokens` (`access_token`, `client_id`, `user_id`, `expi
 ('0e437a13257b6ab0bc68287e560dc1b6be13e909', 'testclient', '1', '2022-02-04 01:42:43', 'app'),
 ('3fd83c9cb3e5d4867ec636f4f54a659aebdb9d29', 'testclient', '1', '2022-02-03 23:17:18', 'app'),
 ('52749006247b5e9590fd9404ab780ca5486e8b16', 'testclient', '1', '2022-02-03 06:17:59', 'app'),
+('e8823d6bc342a2779c84408f6feb48a834c14ba9', 'testclient', '1', '2022-02-04 05:56:52', 'app'),
 ('f1fb88b87f854be70f8e65c9d606d7196dc890ec', 'testclient', '1', '2022-02-03 03:42:10', 'app');
 
 -- --------------------------------------------------------
@@ -141,6 +142,7 @@ CREATE TABLE `oauth_refresh_tokens` (
 --
 
 INSERT INTO `oauth_refresh_tokens` (`refresh_token`, `client_id`, `user_id`, `expires`, `scope`) VALUES
+('8398ee41d7cb265f0bd615c62d031fec31c3f317', 'testclient', '1', '2022-02-18 04:56:52', 'app'),
 ('ad22fa4135bc0962b6b9379584af5584c45c3145', 'testclient', '1', '2022-02-17 22:17:18', 'app'),
 ('c6e70f059cf6791d26836b94b1b99ffcd4dbfceb', 'testclient', '1', '2022-02-17 02:42:10', 'app'),
 ('d7647e3e4f206530c73e17e50c8990b0fbeaef51', 'testclient', '1', '2022-02-18 00:42:43', 'app'),
